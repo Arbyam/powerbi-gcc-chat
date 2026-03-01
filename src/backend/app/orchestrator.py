@@ -9,6 +9,7 @@ import time
 from typing import Any, AsyncGenerator, Dict, List, Optional
 
 from openai import AsyncAzureOpenAI
+from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 
 from .config import get_settings
 from .tools.rest_connector import PowerBIRestConnector
@@ -155,11 +156,24 @@ class Orchestrator:
 
     def __init__(self):
         settings = get_settings()
-        self.client = AsyncAzureOpenAI(
-            azure_endpoint=settings.azure_openai_endpoint,
-            api_key=settings.azure_openai_key or None,
-            api_version=settings.azure_openai_api_version,
-        )
+
+        # Use API key if provided, otherwise use DefaultAzureCredential (Entra ID)
+        if settings.azure_openai_key:
+            self.client = AsyncAzureOpenAI(
+                azure_endpoint=settings.azure_openai_endpoint,
+                api_key=settings.azure_openai_key,
+                api_version=settings.azure_openai_api_version,
+            )
+        else:
+            credential = DefaultAzureCredential()
+            token_provider = get_bearer_token_provider(
+                credential, "https://cognitiveservices.azure.com/.default"
+            )
+            self.client = AsyncAzureOpenAI(
+                azure_endpoint=settings.azure_openai_endpoint,
+                azure_ad_token_provider=token_provider,
+                api_version=settings.azure_openai_api_version,
+            )
         self.deployment = settings.azure_openai_deployment
         self.pbi = PowerBIRestConnector()
         self.security = get_security_layer()
