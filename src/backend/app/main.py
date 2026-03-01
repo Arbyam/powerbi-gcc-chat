@@ -39,7 +39,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins_list,
+    allow_origins=["*"],  # Container Apps handles CORS at ingress level
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -105,19 +105,23 @@ async def health():
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     """Chat with Power BI data using Azure OpenAI."""
-    orch = get_orchestrator()
-    msgs = [m.model_dump() for m in request.messages]
-    conv_id = request.conversation_id or str(uuid.uuid4())
+    try:
+        orch = get_orchestrator()
+        msgs = [m.model_dump() for m in request.messages]
+        conv_id = request.conversation_id or str(uuid.uuid4())
 
-    if request.stream:
-        return StreamingResponse(
-            orch.chat_stream(msgs, conversation_id=conv_id),
-            media_type="text/event-stream",
-            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
-        )
+        if request.stream:
+            return StreamingResponse(
+                orch.chat_stream(msgs, conversation_id=conv_id),
+                media_type="text/event-stream",
+                headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+            )
 
-    result = await orch.chat(msgs, conversation_id=conv_id)
-    return ChatResponse(**result)
+        result = await orch.chat(msgs, conversation_id=conv_id)
+        return ChatResponse(**result)
+    except Exception as e:
+        logger.error("Chat error: %s", e)
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/api/workspaces")

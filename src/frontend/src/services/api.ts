@@ -1,4 +1,5 @@
-const API_BASE = '/api';
+// In dev, Vite proxies /api to localhost:8000. In prod, use VITE_API_URL env var.
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
