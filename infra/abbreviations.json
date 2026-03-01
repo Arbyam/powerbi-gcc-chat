@@ -1,0 +1,8 @@
+{
+  "operationalInsightsWorkspaces": "log-",
+  "containerRegistryRegistries": "cr",
+  "cognitiveServicesAccounts": "oai-",
+  "keyVaultVaults": "kv-",
+  "appManagedEnvironments": "cae-",
+  "appContainerApps": "ca-"
+}

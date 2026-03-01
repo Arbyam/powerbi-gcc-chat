@@ -56,3 +56,12 @@ htmlcov/
 *.pbix
 *.pbit
 *.pbip
+# Node.js
+node_modules/
+src/frontend/dist/
+
+# Azure
+.azure/
+
+# Docker
+*.tar

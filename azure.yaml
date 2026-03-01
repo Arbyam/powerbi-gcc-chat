@@ -1,0 +1,16 @@
+name: powerbi-gcc-chat
+metadata:
+  template: powerbi-gcc-chat@2.0.0
+services:
+  backend:
+    project: ./src/backend
+    host: containerapp
+    language: python
+    docker:
+      path: ./Dockerfile
+  frontend:
+    project: ./src/frontend
+    host: containerapp
+    language: ts
+    docker:
+      path: ./Dockerfile
